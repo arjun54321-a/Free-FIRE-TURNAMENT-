@@ -1,0 +1,158 @@
+// ApnaAdda MVP with Admin Dashboard (React + TailwindCSS)
+
+import React, { useState } from 'react';
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { motion } from "framer-motion";
+
+const adminPassword = "admin123";
+
+export default function ApnaAddaApp() {
+  const [tournaments, setTournaments] = useState([
+    {
+      id: 1,
+      title: "Free Fire - Solo Match",
+      entryFee: "₹10",
+      prize: "₹100",
+      time: "Today, 6:00 PM"
+    },
+    {
+      id: 2,
+      title: "BGMI - Squad War",
+      entryFee: "₹30",
+      prize: "₹500",
+      time: "Today, 8:00 PM"
+    }
+  ]);
+
+  const [joined, setJoined] = useState([]);
+  const [gameId, setGameId] = useState("");
+  const [user, setUser] = useState("");
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [newTournament, setNewTournament] = useState({
+    title: "",
+    entryFee: "",
+    prize: "",
+    time: ""
+  });
+
+  const handleLogin = () => {
+    const name = prompt("Enter your name:");
+    if (name) setUser(name);
+  };
+
+  const handleJoin = (id) => {
+    if (!user) return alert("Please log in first.");
+    if (gameId.trim() !== "") {
+      alert("Payment of Entry Fee Successful (Demo)");
+      setJoined([...joined, id]);
+    } else {
+      alert("Please enter your Game ID before joining.");
+    }
+  };
+
+  const handleAdminLogin = () => {
+    const pass = prompt("Enter Admin Password:");
+    if (pass === adminPassword) setIsAdmin(true);
+    else alert("Wrong password");
+  };
+
+  const addTournament = () => {
+    const id = Date.now();
+    setTournaments([...tournaments, { id, ...newTournament }]);
+    setNewTournament({ title: "", entryFee: "", prize: "", time: "" });
+  };
+
+  const deleteTournament = (id) => {
+    setTournaments(tournaments.filter(t => t.id !== id));
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-100 p-4">
+      <div className="flex justify-between mb-4 max-w-md mx-auto">
+        <h1 className="text-3xl font-bold">🎮 Apna Adda</h1>
+        {!user ? (
+          <Button onClick={handleLogin}>Login</Button>
+        ) : (
+          <span className="text-md mt-2">👤 {user}</span>
+        )}
+      </div>
+
+      <div className="max-w-md mx-auto mb-4">
+        <Input 
+          placeholder="Enter your Game ID here..."
+          value={gameId}
+          onChange={(e) => setGameId(e.target.value)}
+        />
+      </div>
+
+      <div className="grid gap-4 max-w-md mx-auto">
+        {tournaments.map((tournament) => (
+          <motion.div 
+            key={tournament.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Card className="rounded-2xl shadow-md">
+              <CardContent className="p-4">
+                <h2 className="text-xl font-semibold">{tournament.title}</h2>
+                <p className="text-sm text-gray-600">Time: {tournament.time}</p>
+                <p className="mt-1 text-sm">Entry Fee: {tournament.entryFee} | Prize: {tournament.prize}</p>
+                <Button 
+                  className="mt-3 w-full" 
+                  onClick={() => handleJoin(tournament.id)}
+                  disabled={joined.includes(tournament.id)}
+                >
+                  {joined.includes(tournament.id) ? "✅ Joined" : "Join Tournament"}
+                </Button>
+                {isAdmin && (
+                  <Button 
+                    className="mt-2 w-full" 
+                    variant="destructive" 
+                    onClick={() => deleteTournament(tournament.id)}
+                  >
+                    🗑 Delete Tournament
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
+        ))}
+      </div>
+
+      <div className="text-center mt-6">
+        <Button variant="outline" onClick={handleAdminLogin}>Admin Login</Button>
+        {isAdmin && (
+          <div className="mt-4 text-left max-w-md mx-auto bg-white p-4 rounded-xl shadow space-y-3">
+            <h3 className="text-lg font-semibold">🛠 Admin Dashboard</h3>
+            <div className="grid gap-2">
+              <Input 
+                placeholder="Title"
+                value={newTournament.title}
+                onChange={(e) => setNewTournament({ ...newTournament, title: e.target.value })}
+              />
+              <Input 
+                placeholder="Entry Fee (e.g. ₹10)"
+                value={newTournament.entryFee}
+                onChange={(e) => setNewTournament({ ...newTournament, entryFee: e.target.value })}
+              />
+              <Input 
+                placeholder="Prize (e.g. ₹100)"
+                value={newTournament.prize}
+                onChange={(e) => setNewTournament({ ...newTournament, prize: e.target.value })}
+              />
+              <Input 
+                placeholder="Time (e.g. Today, 7 PM)"
+                value={newTournament.time}
+                onChange={(e) => setNewTournament({ ...newTournament, time: e.target.value })}
+              />
+              <Button onClick={addTournament}>➕ Add Tournament</Button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
